@@ -1,8 +1,21 @@
 from flask import Flask, request, jsonify
 from email_sender import EmailSender
+from flask_swagger_ui import get_swaggerui_blueprint
 import os
 
 app = Flask(__name__)
+
+# Configure Swagger UI
+SWAGGER_URL = '/api/docs'
+API_URL = '/static/openapi.yaml'
+swaggerui_blueprint = get_swaggerui_blueprint(
+    SWAGGER_URL,
+    API_URL,
+    config={
+        'app_name': "Email Sender API"
+    }
+)
+app.register_blueprint(swaggerui_blueprint, url_prefix=SWAGGER_URL)
 
 # Global email sender instance
 email_sender = None

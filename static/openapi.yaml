@@ -1,0 +1,158 @@
+openapi: 3.0.0
+info:
+  title: Email Sender API
+  description: API for sending emails to single or multiple recipients with optional attachments
+  version: 1.0.0
+
+servers:
+  - url: https://your-app-name.herokuapp.com
+    description: Production server
+
+paths:
+  /api/config:
+    post:
+      summary: Configure Email Settings
+      description: Sets up the email server configuration for sending emails
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmailConfig'
+            example:
+              email_host: "smtp.example.com"
+              email_port: 587
+              email_user: "your-email@example.com"
+              email_password: "your-password"
+      responses:
+        '200':
+          description: Email configuration set successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+              example:
+                success: true
+                message: "Email configuration set successfully"
+        '400':
+          description: Bad request - missing required fields
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                error: "Missing required fields"
+
+  /api/send:
+    post:
+      summary: Send Email
+      description: Sends emails to one or multiple recipients with optional attachments
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendEmailRequest'
+            example:
+              recipient_emails: ["recipient1@example.com", "recipient2@example.com"]
+              sender_name: "John Doe"
+              email_topic: "Meeting Invitation"
+              email_body: "Hello, this is the email content."
+              attachment_files: ["file1.pdf", "file2.docx"]
+      responses:
+        '200':
+          description: Emails sent successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SendEmailResponse'
+              example:
+                success: true
+                results:
+                  "recipient1@example.com":
+                    success: true
+                    error: null
+
+components:
+  schemas:
+    EmailConfig:
+      type: object
+      required:
+        - email_host
+        - email_port
+        - email_user
+        - email_password
+      properties:
+        email_host:
+          type: string
+          description: SMTP server hostname
+        email_port:
+          type: integer
+          description: SMTP server port
+        email_user:
+          type: string
+          description: Email account username
+        email_password:
+          type: string
+          description: Email account password
+
+    SendEmailRequest:
+      type: object
+      required:
+        - recipient_emails
+        - sender_name
+        - email_topic
+        - email_body
+      properties:
+        recipient_emails:
+          type: array
+          items:
+            type: string
+          description: List of recipient email addresses
+        sender_name:
+          type: string
+          description: Name of the sender
+        email_topic:
+          type: string
+          description: Subject of the email
+        email_body:
+          type: string
+          description: Content of the email
+        attachment_files:
+          type: array
+          items:
+            type: string
+          description: List of attachment file names
+
+    SendEmailResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        results:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              success:
+                type: boolean
+              error:
+                type: string
+                nullable: true
+
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        error:
+          type: string
